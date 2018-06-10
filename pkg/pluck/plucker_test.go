@@ -1,4 +1,4 @@
-package pluck
+package pluck_test
 
 import (
 	"testing"
@@ -232,7 +232,7 @@ func TestPluckCutSection(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, `{"0":"link3"}`, p.ResultJSON())
 
-	assert.Equal(t, []Config{Config{
+	assert.Equal(t, []Config{{
 		Activators:  []string{"Section 2", "a", "href", `"`},
 		Permanent:   1,
 		Deactivator: `"`,

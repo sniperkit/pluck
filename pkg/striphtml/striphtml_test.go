@@ -1,4 +1,4 @@
-package striphtml
+package striphtml_test
 
 import (
 	"testing"

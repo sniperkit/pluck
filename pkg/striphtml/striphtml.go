@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 // from https://storage.googleapis.com/go-attachment/5884/7/strip.go
-
 package striphtml
 
 import (

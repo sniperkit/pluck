@@ -3,7 +3,7 @@ package pluck
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
+
 	"html"
 	"io"
 	"io/ioutil"
@@ -13,40 +13,38 @@ import (
 	"strings"
 	"sync"
 
+	// config
 	"github.com/BurntSushi/toml"
+	config "github.com/sniperkit/pluck/pkg/config"
+
+	// debug
 	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
-	"github.com/sniperkit/pluck/pluck/striphtml"
+	pp "github.com/sniperkit/colly/plugins/app/debug/pp"
+
+	// internal
+	log "github.com/sniperkit/pluck/pkg/log"
+	striphtml "github.com/sniperkit/pluck/pkg/striphtml"
 )
 
-type Mode string 
-
-const (
-	STRICT Mode "strict"
-	ANY Mode "any"
-	STRICT Mode "strict"
-)
-
-// Config specifies parameters for plucking
-type Config struct {
-
-	Activators  []string `json:"activators" yaml:"activators" toml:"activators" xml:"activators" ini:"activators"` // must be found in order, before capturing commences
-	Permanent   int      `json:"permanent" yaml:"permanent" toml:"permanent" xml:"permanent" ini:"permanent"` // number of activators that stay permanently (counted from left to right)
+// ConfigLegacy specifies parameters for plucking
+type ConfigLegacy struct {
+	Activators  []string `json:"activators" yaml:"activators" toml:"activators" xml:"activators" ini:"activators"`                      // must be found in order, before capturing commences
+	Permanent   int      `json:"permanent" yaml:"permanent" toml:"permanent" xml:"permanent" ini:"permanent"`                           // number of activators that stay permanently (counted from left to right)
 	Deactivator string   `required:"true" json:"deactivator" yaml:"deactivator" toml:"deactivator" xml:"deactivator" ini:"deactivator"` // restarts capturing
-	Finisher    string   `json:"finisher" yaml:"finisher" toml:"finisher" xml:"finisher" ini:"finisher"` // finishes capturing this pluck
-	Limit       int      `json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"` // specifies the number of times capturing can occur
-	Name        string   `json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"` // the key in the returned map, after completion
-	Mode    string     `json:"mode" yaml:"mode" toml:"mode" xml:"mode" ini:"mode"` // Activators Mode; available 
-	Sanitize    bool     `json:"sanitize" yaml:"sanitize" toml:"sanitize" xml:"sanitize" ini:"sanitize"` // Sanitize html content
-	Maximum     int      `json:"maximum" yaml:"maximum" toml:"maximum" xml:"maximum" ini:"maximum"` // maximum number of characters for a capture
-	Separator   string   `json:"separator" yaml:"separator" toml:"separator" xml:"separator" ini:"separator"` // separator inside the match to use if we want to join all the occurences into a slice of strings
-	Patterns    []string `json:"patterns" yaml:"patterns" toml:"patterns" xml:"patterns" ini:"patterns"` // identify some optional patterns to split down results
-	Whitelist   []string `json:"whitelist" yaml:"whitelist" toml:"whitelist" xml:"whitelist" ini:"whitelist"` // set a word list to include a plucked occurrence
-	Blacklist   []string `json:"activatoblacklistrs" yaml:"blacklist" toml:"blacklist" xml:"blacklist" ini:"blacklist"` // set a word list to exclude a plucked occurrence
+	Finisher    string   `json:"finisher" yaml:"finisher" toml:"finisher" xml:"finisher" ini:"finisher"`                                // finishes capturing this pluck
+	Limit       int      `json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"`                                               // specifies the number of times capturing can occur
+	Name        string   `json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"`                                                    // the key in the returned map, after completion
+	Mode        string   `json:"mode" yaml:"mode" toml:"mode" xml:"mode" ini:"mode"`                                                    // Activators Mode; available
+	Sanitize    bool     `json:"sanitize" yaml:"sanitize" toml:"sanitize" xml:"sanitize" ini:"sanitize"`                                // Sanitize html content
+	Maximum     int      `json:"maximum" yaml:"maximum" toml:"maximum" xml:"maximum" ini:"maximum"`                                     // maximum number of characters for a capture
+	Separator   string   `json:"separator" yaml:"separator" toml:"separator" xml:"separator" ini:"separator"`                           // separator inside the match to use if we want to join all the occurences into a slice of strings
+	Patterns    []string `json:"patterns" yaml:"patterns" toml:"patterns" xml:"patterns" ini:"patterns"`                                // identify some optional patterns to split down results
+	Whitelist   []string `json:"whitelist" yaml:"whitelist" toml:"whitelist" xml:"whitelist" ini:"whitelist"`                           // set a word list to include a plucked occurrence
+	Blacklist   []string `json:"activatoblacklistrs" yaml:"blacklist" toml:"blacklist" xml:"blacklist" ini:"blacklist"`                 // set a word list to exclude a plucked occurrence
 }
 
 type configs struct {
-	Pluck []Config
+	Pluck []config.Config
 }
 
 // Plucker stores the result and the types of things to pluck
@@ -63,6 +61,10 @@ type pluckUnit struct {
 	blacklist    [][]byte
 	permanent    int
 	maximum      int
+	autoSplit    bool
+	separator    []byte
+	matchMode    []byte
+	matchPhrase  []byte
 	deactivator  []byte
 	finisher     []byte
 	captured     [][]byte
@@ -97,8 +99,8 @@ func (p *Plucker) Verbose(makeVerbose bool) {
 
 // Configuration returns an array of the current
 // Config for each plucker.
-func (p *Plucker) Configuration() (c []Config) {
-	c = make([]Config, len(p.pluckers))
+func (p *Plucker) Configuration() (c []config.Config) {
+	c = make([]config.Config, len(p.pluckers))
 	for i, unit := range p.pluckers {
 		c[i] = unit.config
 	}
@@ -107,7 +109,7 @@ func (p *Plucker) Configuration() (c []Config) {
 
 // Add adds a unit
 // to pluck with specified parameters
-func (p *Plucker) Add(c Config) {
+func (p *Plucker) Add(c config.Config) {
 	var u pluckUnit
 	u.config = c
 	if u.config.Limit == 0 {
@@ -132,6 +134,18 @@ func (p *Plucker) Add(c Config) {
 	if c.Maximum > 0 {
 		u.maximum = c.Maximum
 	}
+
+	// matchMode
+	u.matchMode = []byte(c.Mode)
+
+	// matchPhrase
+	u.matchPhrase = []byte(c.Phrase)
+
+	// separator
+	u.separator = []byte(c.Separtor)
+
+	// autoSplit
+	u.autoSplit = c.Split
 
 	// `patterns` is a list of words to extract as a sub-result tree
 	u.patterns = make([][]byte, len(c.Patterns))
@@ -176,7 +190,7 @@ func (p *Plucker) LoadFromString(tomlString string) (err error) {
 	_, err = toml.Decode(tomlString, &conf)
 	log.Debugf("Loaded toml: %+v", conf)
 	for i := range conf.Pluck {
-		var c Config
+		var c config.Config
 		c.Activators = conf.Pluck[i].Activators
 		c.Deactivator = conf.Pluck[i].Deactivator
 		c.Finisher = conf.Pluck[i].Finisher
@@ -428,30 +442,6 @@ func (p *Plucker) generateResult() {
 			}
 		}
 	}
-}
-
-// ResultJSON returns the result, formatted as JSON.
-// If their are no results, it returns an empty string.
-func (p *Plucker) ResultJSON(indent ...bool) string {
-	totalResults := 0
-	for key := range p.result {
-		b, _ := json.Marshal(p.result[key])
-		totalResults += len(b)
-	}
-	if totalResults == len(p.result)*2 { // results == 2 because its just []
-		return ""
-	}
-	var err error
-	var resultJSON []byte
-	if len(indent) > 0 && indent[0] {
-		resultJSON, err = json.MarshalIndent(p.result, "", "    ")
-	} else {
-		resultJSON, err = json.Marshal(p.result)
-	}
-	if err != nil {
-		log.Error(errors.Wrap(err, "result marshalling failed"))
-	}
-	return string(resultJSON)
 }
 
 // Result returns the raw result
