@@ -1,3 +1,0 @@
-{"Number":"one","Value":"1"}
-{"Number":"two","Value":"2"}
-{"Number":"three","Value":"3"}

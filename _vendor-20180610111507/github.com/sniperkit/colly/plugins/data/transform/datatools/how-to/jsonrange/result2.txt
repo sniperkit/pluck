@@ -1,3 +1,0 @@
-"Doe, Jane"
-"jane.doe@example.org"
-42

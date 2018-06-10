@@ -1,1 +1,0 @@
-# Colly - Configuration files

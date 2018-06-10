@@ -1,6 +1,0 @@
-vendor
-server.rsa.crt
-server.rsa.key
-*.json
-*.yml
-*.toml

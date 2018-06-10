@@ -1,1 +1,0 @@
-{"TableName": "dynamodb", "ConsistentRead": true, "Key": {"attr": {"S": "test0"}}}

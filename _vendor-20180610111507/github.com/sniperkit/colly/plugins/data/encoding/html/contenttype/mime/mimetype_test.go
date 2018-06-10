@@ -1,1 +1,0 @@
-package mimetype_test
