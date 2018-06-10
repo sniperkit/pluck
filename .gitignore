@@ -1,0 +1,6 @@
+dist
+bin
+vendor
+.env
+.secret.*
+secret.*
