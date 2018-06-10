@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/schollz/pluck/pluck"
+	"github.com/sniperkit/pluck/pluck"
 	"github.com/urfave/cli"
 )
 

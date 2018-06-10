@@ -15,20 +15,24 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/pkg/errors"
-	"github.com/schollz/pluck/pluck/striphtml"
 	log "github.com/sirupsen/logrus"
+	"github.com/sniperkit/pluck/pluck/striphtml"
 )
 
 // Config specifies parameters for plucking
 type Config struct {
-	Activators  []string // must be found in order, before capturing commences
-	Permanent   int      // number of activators that stay permanently (counted from left to right)
-	Deactivator string   // restarts capturing
-	Finisher    string   // finishes capturing this pluck
-	Limit       int      // specifies the number of times capturing can occur
-	Name        string   // the key in the returned map, after completion
-	Sanitize    bool
-	Maximum     int // maximum number of characters for a capture
+	Activators  []string `` // must be found in order, before capturing commences
+	Permanent   int      `` // number of activators that stay permanently (counted from left to right)
+	Separator   string   `` // separator inside the match to use if we want to join all the occurences into a slice of strings
+	Deactivator string   `` // restarts capturing
+	Finisher    string   `` // finishes capturing this pluck
+	Limit       int      `` // specifies the number of times capturing can occur
+	Name        string   `` // the key in the returned map, after completion
+	Sanitize    bool     `` // Sanitize html content
+	Maximum     int      `` // maximum number of characters for a capture
+	Patterns    []string `` // identify some optional patterns to split down results
+	Whitelist   []string `` // set a word list to include a plucked occurrence
+	Blacklist   []string `` // set a word list to exclude a plucked occurrence
 }
 
 type configs struct {
@@ -44,6 +48,9 @@ type Plucker struct {
 type pluckUnit struct {
 	config       Config
 	activators   [][]byte
+	patterns     [][]byte
+	whitelist    [][]byte
+	blacklist    [][]byte
 	permanent    int
 	maximum      int
 	deactivator  []byte
@@ -103,6 +110,7 @@ func (p *Plucker) Add(c Config) {
 	for i := range c.Activators {
 		u.activators[i] = []byte(c.Activators[i])
 	}
+
 	u.permanent = c.Permanent
 	u.deactivator = []byte(c.Deactivator)
 	if len(c.Finisher) > 0 {
@@ -114,6 +122,25 @@ func (p *Plucker) Add(c Config) {
 	if c.Maximum > 0 {
 		u.maximum = c.Maximum
 	}
+
+	// `patterns` is a list of words to extract as a sub-result tree
+	u.patterns = make([][]byte, len(c.Patterns))
+	for i := range c.Patterns {
+		u.patterns[i] = []byte(c.Patterns[i])
+	}
+
+	// `whitelist` specifies a word list to check in order to include a match
+	u.whitelist = make([][]byte, len(c.Whitelist))
+	for i := range c.Whitelist {
+		u.whitelist[i] = []byte(c.Whitelist[i])
+	}
+
+	// `blacklist` specifies a word list to check in order to exclude a match
+	u.blacklist = make([][]byte, len(c.Blacklist))
+	for i := range c.Blacklist {
+		u.blacklist[i] = []byte(c.Blacklist[i])
+	}
+
 	u.captureByte = make([]byte, 100000)
 	u.captured = [][]byte{}
 	p.pluckers = append(p.pluckers, u)

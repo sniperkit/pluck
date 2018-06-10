@@ -8,6 +8,9 @@ LDFLAGS=-ldflags "-s -w -X main.version=${VERSION}"
 build:
 	go build ${LDFLAGS} -o dist/pluck
 
+install: build
+	go install ${LDFLAGS}
+
 .PHONY: linuxarm
 linuxarm:
 	env GOOS=linux GOARCH=arm go build ${LDFLAGS} -o dist/pluck_linux_arm
