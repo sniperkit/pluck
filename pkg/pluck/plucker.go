@@ -19,20 +19,30 @@ import (
 	"github.com/sniperkit/pluck/pluck/striphtml"
 )
 
+type Mode string 
+
+const (
+	STRICT Mode "strict"
+	ANY Mode "any"
+	STRICT Mode "strict"
+)
+
 // Config specifies parameters for plucking
 type Config struct {
-	Activators  []string `` // must be found in order, before capturing commences
-	Permanent   int      `` // number of activators that stay permanently (counted from left to right)
-	Separator   string   `` // separator inside the match to use if we want to join all the occurences into a slice of strings
-	Deactivator string   `` // restarts capturing
-	Finisher    string   `` // finishes capturing this pluck
-	Limit       int      `` // specifies the number of times capturing can occur
-	Name        string   `` // the key in the returned map, after completion
-	Sanitize    bool     `` // Sanitize html content
-	Maximum     int      `` // maximum number of characters for a capture
-	Patterns    []string `` // identify some optional patterns to split down results
-	Whitelist   []string `` // set a word list to include a plucked occurrence
-	Blacklist   []string `` // set a word list to exclude a plucked occurrence
+
+	Activators  []string `json:"activators" yaml:"activators" toml:"activators" xml:"activators" ini:"activators"` // must be found in order, before capturing commences
+	Permanent   int      `json:"permanent" yaml:"permanent" toml:"permanent" xml:"permanent" ini:"permanent"` // number of activators that stay permanently (counted from left to right)
+	Deactivator string   `required:"true" json:"deactivator" yaml:"deactivator" toml:"deactivator" xml:"deactivator" ini:"deactivator"` // restarts capturing
+	Finisher    string   `json:"finisher" yaml:"finisher" toml:"finisher" xml:"finisher" ini:"finisher"` // finishes capturing this pluck
+	Limit       int      `json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"` // specifies the number of times capturing can occur
+	Name        string   `json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"` // the key in the returned map, after completion
+	Mode    string     `json:"mode" yaml:"mode" toml:"mode" xml:"mode" ini:"mode"` // Activators Mode; available 
+	Sanitize    bool     `json:"sanitize" yaml:"sanitize" toml:"sanitize" xml:"sanitize" ini:"sanitize"` // Sanitize html content
+	Maximum     int      `json:"maximum" yaml:"maximum" toml:"maximum" xml:"maximum" ini:"maximum"` // maximum number of characters for a capture
+	Separator   string   `json:"separator" yaml:"separator" toml:"separator" xml:"separator" ini:"separator"` // separator inside the match to use if we want to join all the occurences into a slice of strings
+	Patterns    []string `json:"patterns" yaml:"patterns" toml:"patterns" xml:"patterns" ini:"patterns"` // identify some optional patterns to split down results
+	Whitelist   []string `json:"whitelist" yaml:"whitelist" toml:"whitelist" xml:"whitelist" ini:"whitelist"` // set a word list to include a plucked occurrence
+	Blacklist   []string `json:"activatoblacklistrs" yaml:"blacklist" toml:"blacklist" xml:"blacklist" ini:"blacklist"` // set a word list to exclude a plucked occurrence
 }
 
 type configs struct {
