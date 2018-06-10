@@ -1,0 +1,87 @@
+---
+filters:
+  response:
+    parse_http_error_response: false
+    detect_charset: true
+    detect_mime_type: true
+    detect_tabular_data: false
+    max_body_size: 0
+  blacklists:
+    domains: []
+    urls:
+    - enabled: true
+      rule: (.*)?sort=$
+      scanner: regex
+    file_extensions: []
+    headers: []
+    mime_types: []
+    responses: []
+  whitelists:
+    domains:
+    - golanglibs.com
+    - golanglibs.com:443
+    urls:
+    - enabled: true
+      rule: ^/?page=([0-9])+$
+      scanner: regex
+    - enabled: true
+      rule: ^/top$
+      scanner: regex
+    - enabled: true
+      rule: ^/categories$
+      scanner: regex
+    - enabled: true
+      rule: ^/random$
+      scanner: regex
+    - enabled: true
+      rule: ^/active$
+      scanner: regex
+    - enabled: true
+      rule: ^/tagged$
+      scanner: regex
+    - enabled: true
+      rule: ^/repo/$
+      scanner: regex
+    - enabled: true
+      rule: ^/category/$
+      scanner: regex
+    - enabled: true
+      rule: ^/tag/$
+      scanner: regex
+    - enabled: true
+      rule: ^/similar/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/?page=([0-9])+$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/top$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/categories$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/random$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/active$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/tagged$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/repo/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/category/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/tag/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/similar/$
+      scanner: regex
+    file_extensions: []
+    headers: []
+    mime_types: []
+    responses: []

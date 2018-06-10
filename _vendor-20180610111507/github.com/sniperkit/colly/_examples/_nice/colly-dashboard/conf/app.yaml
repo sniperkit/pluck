@@ -1,0 +1,7 @@
+---
+app:
+  identifier: 1
+  title: "golanglibs.com collector - dashboard"
+  debug: false
+  verbose: false
+  dashboard: true

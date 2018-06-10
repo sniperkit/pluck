@@ -1,0 +1,7 @@
+config.*
+colly.yaml
+colly.yml
+.env
+*prod*
+secret.yaml
+secret.yml

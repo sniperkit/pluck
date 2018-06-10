@@ -1,0 +1,59 @@
+Check that a JSON object's keys correspond to a struct's exported members or JSON tags.
+
+ANNOUNCEMENTS
+
+2018.03.14 - Add ExistingJSONKeys()
+2018.02.16 - Add test example of using go v1.10 (*Decoder)DisallowUnknownFields()
+2017.02.13 - Handle "-" and "omitempty" JSON tags in struct definitions.
+2017.02.08 - UnknownJSONKeys lists all JSON object keys that won't be decoded. 
+2016.11.18 - MissingJSONKeys lists all struct members that won't be set by JSON object.
+
+USAGE
+
+https://godoc.org/github.com/clbanning/checkjson
+
+	Example:
+	
+	data := `
+	{
+	   "elem1":"a simple element",
+	   "elem2": {
+	      "subelem":"something more complex", 
+	      "notes":"take a look at this" }
+	   "elem4":"extraneous" 
+	}`
+
+	type sub struct {
+	   Subelem string `json:"subelem,omitempty"`
+	   Another string `json:"another"`
+	}
+	type elem struct {
+	   Elem1 string `json:"elem1"`
+	   Elem2 sub    `json:"elem2"`
+	   Elem3 bool   `json:"elem3"`
+	}
+
+	e := new(elem)
+	result, _ := MissingJSONKeys([]byte(data), e)
+	// result: [elem2.another elem3]
+
+	result, _ = UnknownJSONKeys([]byte(data), e)
+	// result: [elem2.notes elem4]
+	// NOTE: using the stdlib json.Decoder with (*Decoder)DisallowUnknownFields() set
+	//       will error on the first unknown key; it does not return a slice of all
+	//       unknown keys - see: unknownfieldserr_test.go.
+
+MOTIVATION
+
+I make extensive use of JSON configuration files.  Sometimes the files are large or
+complex and JSON keys can be prone to typos or case errors. The "encoding/json" decoder 
+just ignores JSON keys that do not correspond to struct member names/tags; this can 
+result in unexpected initialization errors or the failure to override defaults. 
+The checkjson.Validate() function identifies JSON object keys that cannot be decoded 
+to a member of the struct using the "encoding/json" package.
+
+RELATED
+
+There is a similar package for validating XML tags against structs in 
+https://github.com/clbanning/checkxml.
+

@@ -1,0 +1,184 @@
+---
+app:
+  identifier: 1
+  title: "golanglibs.com collector - dashboard"
+  debug: false
+  verbose: false
+  dashboard: true
+debug:
+  config:
+    load_verbose: false
+    load_debug: false
+    load_error_on_unmatched_keys: false
+    export_enabled: true
+    export_sections: []
+    export_schema_only: true
+    export_prefix_path: "./shared/exports/config/dump/golanglibs.com"
+    export_formats: ["yaml","csv","xml","toml"]
+  tachymeter:
+    enabled: true
+    async: false
+    sample_size: 50
+    histogram_bins: 10
+    export:
+      enabled: false
+      backup_mode: false
+      backup_suffix: ""
+      backup_prefix: "_test"
+      overwrite: true
+      encoding: ""
+      format: "html"
+      basename: "colly_golanglibs"
+      split_at: 2500
+      buffer_size: 20000
+      prefix_path: ""
+      export_dir: ""
+      ensure_dir: true
+      ensure_dir_recursively: true
+collector:
+  root_url: "https://golanglibs.com"
+  user_agent: "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+  random_user_agent: false
+  max_depth: 0
+  allow_url_revisit: false
+  ignore_robots_txt: false
+  current_mode: "queue"
+  modes:
+    default:
+      random_delay: 0s
+    async:
+      parallelism: 3
+      domain_glob: "*"
+      random_delay: 0s
+      max_size: 0
+    queue:
+      workers_count: 3
+      max_size: 0
+      random_delay: 0s
+  cache:
+    enabled: true
+    backend: "inMemory"
+    dir: "./shared/store/cache/inMemory"
+  transport:
+    http:
+      cache:
+        enabled: true
+        backend: "badger"
+        ttl: 3600s
+        store:
+          enabled: true
+          dir: "./shared/storage/cache/http"
+      stats:
+        enabled: true
+  proxy:
+    enabled: true
+    fetch_remote_list: true
+    pool_mode: false
+    list:
+    - address: 'socks5://127.0.0.1:1337'
+      enabled: false
+    - address: 'socks5://127.0.0.1:1338'
+      enabled: false
+  sitemap:
+    enabled: true
+    url: "https://golanglibs.com/sitemap.txt"
+    auto_detect: false
+    limit_urls: 0
+filters:
+  response:
+    parse_http_error_response: false
+    detect_charset: true
+    detect_mime_type: true
+    detect_tabular_data: false
+    max_body_size: 0
+  blacklists:
+    domains: []
+    urls:
+    - enabled: true
+      rule: (.*)?sort=$
+      scanner: regex
+    file_extensions: []
+    headers: []
+    mime_types: []
+    responses: []
+  whitelists:
+    domains:
+    - golanglibs.com
+    - golanglibs.com:443
+    urls:
+    - enabled: true
+      rule: ^/?page=([0-9])+$
+      scanner: regex
+    - enabled: true
+      rule: ^/top$
+      scanner: regex
+    - enabled: true
+      rule: ^/categories$
+      scanner: regex
+    - enabled: true
+      rule: ^/random$
+      scanner: regex
+    - enabled: true
+      rule: ^/active$
+      scanner: regex
+    - enabled: true
+      rule: ^/tagged$
+      scanner: regex
+    - enabled: true
+      rule: ^/repo/$
+      scanner: regex
+    - enabled: true
+      rule: ^/category/$
+      scanner: regex
+    - enabled: true
+      rule: ^/tag/$
+      scanner: regex
+    - enabled: true
+      rule: ^/similar/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/?page=([0-9])+$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/top$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/categories$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/random$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/active$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/tagged$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/repo/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/category/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/tag/$
+      scanner: regex
+    - enabled: true
+      rule: ^(.*)/similar/$
+      scanner: regex
+    file_extensions: []
+    headers: []
+    mime_types: []
+    responses: []
+collection:
+  enabled: false
+  databooks: []
+  datasets: []
+outputs:
+  xdg_base_dir: "/Users/sniperkit/.colly/.config"
+  base_dir: ""
+  logs_dir: ""
+  cache_dir: ""
+  export_dir: ""
+  force_dir: false
+  force_dir_recursive: false

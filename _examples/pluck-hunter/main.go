@@ -1,0 +1,177 @@
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/sniperkit/pluck/pkg/config"
+	"github.com/sniperkit/pluck/pkg/pluck"
+	"github.com/urfave/cli"
+)
+
+var version string
+
+func main() {
+	app := cli.NewApp()
+	app.Version = version
+	app.Compiled = time.Now()
+	app.Name = "pluck-hunter"
+	app.Usage = ""
+	app.UsageText = `	
+1) Pluck all hunter packages with their version from the hunter official repository
+$ pluck-hunter -a '<' -a 'href' -a '"' -d '"' -l -1 -u https://nytimes.com
+
+2) Pluck all hunter packages in a CMakeLists.txt with its dependencies
+$ pluck-hunter -a '<title>' -d '<' -f test.html
+
+3) Pluck using a configuration file. 
+$ # Example config file
+$ cat config.toml
+[[pluck]]
+activators = ["hunter_add_package", "("]
+deactivator = ")"
+name = "hunter_add_package"
+
+[[pluck]]
+activators = ["HunterGate", "("]
+deactivator = ")"
+limit = -1
+name = "hunter_gate"
+$ pluck -c config.toml -u https://goo.gl/DHmqmv
+
+4) Get all projects/framework that are hunter compatible
+$ pluck -a '<a class="js-navigation-open"' -a ">" -d '<' -l -1 -u 'https://github.com/ruslo/hunter/tree/master/cmake/projects'
+
+		`
+	app.Flags = []cli.Flag{
+		cli.StringFlag{
+			Name:  "file,f",
+			Value: "",
+			Usage: "file to pluck",
+		},
+		cli.StringFlag{
+			Name:  "url,u",
+			Value: "",
+			Usage: "url to pluck",
+		},
+		cli.StringFlag{
+			Name:  "config,c",
+			Value: "",
+			Usage: "specify toml config file",
+		},
+		cli.StringSliceFlag{
+			Name:  "activator,a",
+			Usage: "text to find in order to start capture (can specify multiple times)",
+		},
+		cli.StringFlag{
+			Name:  "deactivator,d",
+			Value: "",
+			Usage: "text to find to restart capturing",
+		},
+		cli.IntFlag{
+			Name:  "permanent,p",
+			Value: 0,
+			Usage: "number of activators that stay activated (from left to right)",
+		},
+		cli.StringFlag{
+			Name:  "finisher",
+			Value: "",
+			Usage: "text to find to stop capturing completely",
+		},
+		cli.IntFlag{
+			Name:  "limit,l",
+			Value: -1,
+			Usage: "maximum number of items to capture",
+		},
+		cli.BoolFlag{
+			Name:  "sanitize,s",
+			Usage: "sanitize output (html tag stripping and hex conversion)",
+		},
+		cli.BoolFlag{
+			Name:  "text, t",
+			Usage: "output as plain text, not JSON",
+		},
+		cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "turn on verbose mode",
+		},
+		cli.StringFlag{
+			Name:  "output,o",
+			Value: "",
+			Usage: "direct output to file",
+		},
+	}
+
+	app.Action = func(c *cli.Context) (err error) {
+		if c.GlobalString("file") == "" && c.GlobalString("url") == "" {
+			fmt.Println("Must specify file or url. For example -u https://nytimes.com.\nSee help and usage with -h")
+			return nil
+		}
+		p, _ := pluck.New()
+		if c.GlobalBool("verbose") {
+			p.Verbose(true)
+		}
+		if len(c.GlobalString("config")) > 0 {
+			p.Load(c.GlobalString("config"))
+		} else {
+			if len(c.GlobalStringSlice("activator")) == 0 {
+				fmt.Println("Must specify at least one activator. For example -a 'start'.\nSee help and usage with -h")
+				return nil
+			}
+			if len(c.GlobalString("deactivator")) == 0 {
+				fmt.Println("Must specify at deactivator. For example -d 'end'.\nSee help and usage with -h")
+				return nil
+			}
+			p.Add(config.Config{
+				Activators:  c.GlobalStringSlice("activator"),
+				Deactivator: c.GlobalString("deactivator"),
+				Limit:       c.GlobalInt("limit"),
+				Sanitize:    c.GlobalBool("sanitize"),
+				Finisher:    c.GlobalString("finisher"),
+				Permanent:   c.GlobalInt("permanent"),
+				// add other features later...
+			})
+		}
+
+		if len(c.GlobalString("file")) > 0 {
+			err = p.PluckFile(c.GlobalString("file"))
+		} else {
+			err = p.PluckURL(c.GlobalString("url"))
+		}
+		if err != nil {
+			return err
+		}
+		var result string
+		if c.GlobalBool("text") {
+			results, ok := p.Result()["0"].([]string)
+			if !ok {
+				results2, ok2 := p.Result()["0"].(string)
+				if !ok2 {
+					fmt.Println("Error?")
+					os.Exit(-1)
+				} else {
+					result = results2
+				}
+			} else {
+				result = strings.Join(results, "\n\n")
+			}
+		} else {
+			result = p.ResultJSON(true)
+		}
+		if c.GlobalString("output") != "" {
+			return ioutil.WriteFile(c.GlobalString("output"), []byte(result), 0644)
+		} else {
+			fmt.Println(result)
+		}
+
+		return nil
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Print(err)
+	}
+}

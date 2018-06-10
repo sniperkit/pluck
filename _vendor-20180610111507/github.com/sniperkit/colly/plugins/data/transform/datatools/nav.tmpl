@@ -1,0 +1,14 @@
+{{- $relroot := .relroot -}}
++ [Home](/)
+{{- with .readme }}
++ [README]({{- $relroot -}}{{- . -}}){{- end }}
+{{- with .license }}
++ [LICENSE]({{- $relroot -}}{{- . }}){{- end }}
+{{- with .install }}
++ [INSTALL]({{- $relroot -}}{{- . -}}){{- end }}
+{{- with .docs }}
++ [Documentation]({{- $relroot -}}{{- . -}}){{- end }}
+{{- with .howto }}
++ [How To]({{- $relroot -}}{{- . -}}){{- end }}
+{{- with .gitrepo }}
++ [Github]({{- . -}}){{- end }}

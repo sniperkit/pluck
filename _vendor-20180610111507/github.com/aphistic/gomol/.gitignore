@@ -1,0 +1,7 @@
+.vscode
+coverage.txt
+coverage.out
+debug.test
+gomol.test
+junit.xml
+

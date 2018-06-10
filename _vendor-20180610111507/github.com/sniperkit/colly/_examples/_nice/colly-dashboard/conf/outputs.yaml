@@ -1,0 +1,8 @@
+outputs:
+  xdg_base_dir: /Users/lucmichalski/.config
+  base_dir: ./shared
+  logs_dir: ./shared/logs
+  cache_dir: ./shared/storage/cache/collector
+  export_dir: ./shared/exports
+  force_dir: true
+  force_dir_recursive: true

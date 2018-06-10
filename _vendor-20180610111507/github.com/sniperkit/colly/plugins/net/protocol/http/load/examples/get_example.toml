@@ -1,0 +1,24 @@
+title = "Workload get example"
+
+[global]
+block_size = 5
+Duration = "160s"
+servers=["127.0.0.1", "127.0.0.1"]
+server="127.0.0.1"
+port="8080"
+TLSMode=false
+ [global.StatusCodesAcceptance]
+  200 = 100.0
+  204 = 100.0
+  205 = 100.0
+
+[workloads]
+   [workloads.get]
+    generator="performance"
+    name="multi get from 20 workers"
+    container=""
+    Target="test.html"
+    Duration = "10s"
+    TYPE="GET"
+    count=0
+    workers=20

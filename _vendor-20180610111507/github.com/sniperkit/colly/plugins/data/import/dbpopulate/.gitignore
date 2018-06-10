@@ -1,0 +1,5 @@
+/dbpopulate
+/dbpopulate_*
+
+*.db
+.env

@@ -1,0 +1,36 @@
+---
+collector:
+  root_url: "https://golanglibs.com"
+  user_agent: "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"
+  random_user_agent: false
+  max_depth: 0
+  allow_url_revisit: false
+  ignore_robots_txt: false
+  current_mode: "queue"
+  modes:
+    default:
+      random_delay: 0s
+    async:
+      parallelism: 3
+      domain_glob: "*"
+      random_delay: 0s
+      max_size: 0
+    queue:
+      workers_count: 3
+      max_size: 0
+      random_delay: 0s
+  cache:
+    enabled: true
+    backend: "inMemory"
+    dir: "./shared/store/cache/inMemory"
+  transport:
+    http:
+      cache:
+        enabled: true
+        backend: "badger"
+        ttl: 3600s
+        store:
+          enabled: true
+          dir: "./shared/storage/cache/http"
+      stats:
+        enabled: true

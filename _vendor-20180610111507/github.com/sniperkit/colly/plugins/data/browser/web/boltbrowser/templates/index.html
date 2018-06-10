@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>boltDB web-browser</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!-- jQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<!-- Icons -->
+	<link rel="stylesheet" type="text/css" media="screen" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+	<!-- Custom css and js -->
+	<link rel="stylesheet" type="text/css" media="screen" href="/static/main.css" />
+	<script src="/static/main.js"></script>
+	{{if .WriteMode}}
+	<!-- Add write_mode.js -->
+	<script src="/static/write_mode.js"></script>
+	{{end}}
+</head>
+<body onload="ShowDBList(); PrepareLS();" style="margin: 0px 0px 0px 0px; overflow-y: hidden;">
+	<!-- Menu -->
+	<div class="menu" id="menu">	
+		<div style="float: left; margin: 2px 0px 0px 2px;">
+			<i class="material-icons icon btn" onclick="ShowDBsList();" title="Show the list of dbs">list</i>
+		</div>
+		<div style="padding-top: 5px; display:inline-flex;">
+				<a href="https://github.com/ShoshinNikita/boltbrowser" target="_blank" style="color: black; text-decoration: none;" title="Page on GitHub">boltBrowser</a>
+		</div>
+		<div style="float: right; margin: 2px 2px 0px 0px;">
+			<a href="https://github.com/ShoshinNikita/boltbrowser/issues" target="_blank" style="color: black;">
+				<i class="material-icons icon" title="Leave feedback">feedback</i>
+			</a>
+		</div>
+	</div>
+
+	<!-- List of dbs -->
+	<div class="background" id="dbListBackground">
+		<div class="db_list" id="dbList">
+			<div style="font-size: 25px; text-align: center; border-bottom: 1px solid black; margin-top: 5px;">
+				Databases
+				<i class="material-icons btn icon" style="float: right; margin-right: 1vw;" onclick="ShowOpenDbWindow();" title="Open new db">add</i>
+			</div>
+			<br>
+			<div id="list" style="overflow-y: auto;"></div>
+		</div>
+	</div>
+
+	<!-- Main div -->
+	<div class="db">
+		<!-- Info about the current db -->
+		<div class="db_info">
+			<div style="margin: 0px 5px 5px 5px;">
+				<!-- Main info -->
+				<div style="float: left;">
+					<div id="dbName"><i>Name:</i> ?</div>
+					<div id="dbPath" style="font-size: 17px;"><i>Path:</i> ?</div>
+					<div id="dbSize" style="font-size: 17px;"><i>Size:</i> ?</div>
+				</div>
+				<!-- Search -->
+				<div id="searchBox" style="float: right; visibility: hidden;">
+					<div style="float: left; font-size: 15px;">
+						<input type="text" id="searchText" style="width: 200px; font-size: 17px;">
+						<br>
+						Regex-mode: <input type="checkbox" id="regexMode" title="Regex-mode">
+					</div>
+					<div style="float: right;">
+						<i class="material-icons icon btn" style="font-size: 35px !important;" title="Search" onclick="Search();">search</i>
+						<br>
+						<i class="material-icons btn" style=" font-size: 35px !important;" title="Hide results" onclick="ChooseDB(currentDBPath);">close</i>
+					</div>
+				</div>
+			</div>
+		</div>
+	
+		<!-- Path to the current bucket -->
+		<div style="height: 3vh; border-top: 1px solid black; border-bottom: 1px solid black;">
+			<i>
+				<div id="currentPath" style="margin: 1px 5px 1px 5px; display: inline-block;"></div>
+				<div id="recordsAmount" style="display: inline-block;"></div>
+			</i>
+		</div>
+
+		<!-- Records -->
+		<div style="height: 80vh; overflow: hidden; padding-top: 2px;">
+			<div class="db_tree_wrapper" id="dbTreeWrapper">
+				<div id="dbTree"></div>
+			</div>
+			
+			<!-- Full record -->
+			<div class="record_data" id="recordData">
+				<h4 style="border-bottom: 1px solid black;"><i>Record</i></h4>
+				<div id="recordPath">?</div>
+				<h4 style="border-bottom: 1px solid black;"><i>Value</i></h4>
+				<div id="recordValue">?</div>
+				<br>
+			</div>
+		</div>
+	</div>
+
+	<div class="popup" id="errorPopup" onclick="HideErrorPopup();">
+		<div style="padding: 5px 5px 5px 5px;" id="popupMessage"></div>
+	</div>
+
+	<div id="openDbWindow" class="background">
+		<div class="modal-content">
+			<i class="material-icons btn" style="font-size: 20px !important; vertical-align: middle;" onclick="ShowPathsForDelete();" title="Change the list of paths">settings</i>
+			<input list="paths" id="DBPath" style="width: 75%;" autofocus>
+			<datalist id="paths"></datalist>
+			<input type="button" value="Open" class="button" onclick="OpenDB(); HideOpenDbWindow();">
+			<div id="dbPathsList" style="margin-top: 20px; display: none;"></div>
+		</div>
+	</div>
+	<div id="donePopup" class="done_popup">
+		<div style="margin: auto; user-select: none;">Done</div>
+	</div>
+
+	{{if .WriteMode}}
+	<!-- Add this elements only for WriteMode -->
+	<div id="popupMenu" class="popup_menu">
+		<div id="popupMenuContent"></div>
+	</div>
+
+	<div id="addItemWindowBackground" class="background">
+		<div class="modal-content" id="addItemWindow">
+		</div>
+	</div>
+	{{end}}
+</body>
+</html>
