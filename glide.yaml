@@ -1,0 +1,24 @@
+package: github.com/sniperkit/pluck
+import:
+- package: github.com/BurntSushi/toml
+- package: github.com/aphistic/gomol
+- package: github.com/aphistic/gomol-console
+- package: github.com/efritz/glock
+- package: github.com/pkg/errors
+- package: github.com/sirupsen/logrus
+- package: github.com/sniperkit/colly
+  subpackages:
+  - plugins/app/debug/pp
+  - plugins/data/import/configor
+- package: github.com/urfave/cli
+- package: github.com/x-cray/logrus-prefixed-formatter
+- package: go.uber.org/zap
+  subpackages:
+  - zapcore
+testImport:
+- package: github.com/aphistic/sweet
+- package: github.com/aphistic/sweet-junit
+- package: github.com/onsi/gomega
+- package: github.com/stretchr/testify
+  subpackages:
+  - assert

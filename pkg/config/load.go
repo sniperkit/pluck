@@ -23,14 +23,14 @@ var (
 
 func init() {
 	if AutoLoad {
-		autoLoad() {
+		autoLoad()
 	}
 }
 
 // autoLoad
 func autoLoad() {
 	var err error
-	collectorBaseDir, err = configor.XDGBaseDir()
+	DefaultXDGBaseDirectory, err = configor.XDGBaseDir()
 	if err != nil {
 		fmt.Println("Can't find XDG BaseDirectory")
 		os.Exit(1)
@@ -38,20 +38,20 @@ func autoLoad() {
 }
 
 // NewFromFile
-func NewFromFile(verbose, debug, esrrorOnUnmatchedKeys bool, files ...string) (*Config, error) {
-	globalConfig := &Config{}
+func NewFromFile(verbose, debug, esrrorOnUnmatchedKeys bool, files ...string) (*Configs, error) {
+	globalConfig := &Configs{}
 	xdgPath, err := getDefaultXDGBaseDirectory()
 	if err != nil {
 		return nil, err
 	}
-	globalConfig.Dirs.XDGBaseDir = xdgPath
+	globalConfig.XDGBaseDir = xdgPath
 	configor.New(&configor.Config{Debug: debug, Verbose: verbose, ErrorOnUnmatchedKeys: false}).Load(&globalConfig, files...)
 
 	return globalConfig, nil
 }
 
 // Dump
-func (c *Config) Dump(formats, nodes []string, prefixPath string) error {
+func (c *Configs) Dump(formats, nodes []string, prefixPath string) error {
 	return configor.Dump(c, nodes, formats, prefixPath)
 }
 
@@ -59,7 +59,6 @@ func (c *Config) Dump(formats, nodes []string, prefixPath string) error {
 func Dump(c interface{}, formats, nodes []string, prefixPath string) error {
 	return configor.Dump(c, nodes, formats, prefixPath)
 }
-
 
 func getDefaultXDGBaseDirectory() (string, error) {
 	xdgPath, err := configor.XDGBaseDir()

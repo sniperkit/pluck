@@ -1,16 +1,38 @@
 package config
 
+// Configs specifies...
+type Configs struct {
+
+	// Debug
+	Debug bool `default:"false" json:"debug,omitempty" yaml:"debug,omitempty" toml:"debug,omitempty" xml:"debug,omitempty" ini:"debug,omitempty"`
+
+	// Verbose
+	Verbose bool `default:"true" json:"verbose,omitempty" yaml:"verbose,omitempty" toml:"verbose,omitempty" xml:"verbose,omitempty" ini:"verbose,omitempty"`
+
+	// XDGBaseDir specifies
+	XDGBaseDir string `json:"xdg_base_dir,omitempty" yaml:"xdg_base_dir,omitempty" toml:"xdg_base_dir,omitempty" xml:"xdgBaseDir,omitempty" ini:"xdgBaseDir,omitempty"`
+
+	// Pluck specifies the list of content plucking units
+	Pluck []Config `json:"plucker" yaml:"plucker" toml:"plucker" xml:"plucker" ini:"plucker"`
+}
+
 // Config specifies parameters for plucking
 type Config struct {
 
 	// Enabled
-	Enabled bool `default:"true" json:"enabled" yaml:"enabled" toml:"enabled" xml:"enabled" ini:"enabled"`
+	Enabled bool `default:"true" json:"enabled,omitempty" yaml:"enabled,omitempty" toml:"enabled,omitempty" xml:"enabled,omitempty" ini:"enabled,omitempty"`
 
 	// Debug
-	Debug bool `default:"false" json:"debug" yaml:"debug" toml:"debug" xml:"debug" ini:"debug"`
+	Debug bool `default:"false" json:"debug,omitempty" yaml:"debug,omitempty" toml:"debug,omitempty" xml:"debug,omitempty" ini:"debug,omitempty"`
 
 	// Verbose
-	Verbose bool `default:"true" json:"verbose" yaml:"verbose" toml:"verbose" xml:"verbose" ini:"verbose"`
+	Verbose bool `default:"true" json:"verbose,omitempty" yaml:"verbose,omitempty" toml:"verbose,omitempty" xml:"verbose,omitempty" ini:"verbose,omitempty"`
+
+	// Sanitize html content
+	Sanitize bool `default:"false" json:"sanitize,omitempty" yaml:"sanitize,omitempty" toml:"sanitize,omitempty" xml:"sanitize,omitempty" ini:"sanitize,omitempty"`
+
+	// the key in the returned map, after completion
+	Name string `required:"true" json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"`
 
 	// must be found in order, before capturing commences
 	Activators []string `json:"activators" yaml:"activators" toml:"activators" xml:"activators" ini:"activators"`
@@ -22,19 +44,13 @@ type Config struct {
 	Deactivator string `required:"true" json:"deactivator" yaml:"deactivator" toml:"deactivator" xml:"deactivator" ini:"deactivator"`
 
 	// finishes capturing this pluck
-	Finisher string `json:"finisher" yaml:"finisher" toml:"finisher" xml:"finisher" ini:"finisher"`
+	Finisher string `json:"finisher,omitempty" yaml:"finisher,omitempty" toml:"finisher,omitempty" xml:"finisher,omitempty" ini:"finisher,omitempty"`
 
 	// specifies the number of times capturing can occur
-	Limit int `json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"`
-
-	// the key in the returned map, after completion
-	Name string `json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"`
-
-	// Sanitize html content
-	Sanitize bool `json:"sanitize" yaml:"sanitize" toml:"sanitize" xml:"sanitize" ini:"sanitize"`
+	Limit int `default:"-1" json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"`
 
 	// maximum number of characters for a capture
-	Maximum int `json:"maximum" yaml:"maximum" toml:"maximum" xml:"maximum" ini:"maximum"`
+	Maximum int `json:"maximum,omitempty" yaml:"maximum,omitempty" toml:"maximum,omitempty" xml:"maximum,omitempty" ini:"maximum,omitempty"`
 
 	// Match specifies...
 	Match Match `json:"match" yaml:"match" toml:"match" xml:"match" ini:"match"`

@@ -3,8 +3,12 @@ package config
 import (
 	"fmt"
 	"os"
+	// pp "github.com/sniperkit/colly/plugins/app/debug/pp"
+)
 
-	pp "github.com/sniperkit/colly/plugins/app/debug/pp"
+const (
+	// DEFAULT_BASE_DIR
+	DEFAULT_BASE_DIR = "."
 )
 
 var (
@@ -28,7 +32,7 @@ var (
 
 func init() {
 	var err error
-	DefaultXDGBaseDirectory, err := getDefaultXDGBaseDirectory()
+	DefaultXDGBaseDirectory, err = getDefaultXDGBaseDirectory()
 	if err != nil {
 		fmt.Println("error while trying to get the default xdgb base directory")
 		os.Exit(1)
@@ -53,7 +57,7 @@ func GenerateExpectedFilepaths(pp string) {
 	if len(defaultConfigPrefixPathList) > 0 {
 		DefaultConfigFilepaths = defaultConfigPrefixPathList
 	}
-	pp.Println(defaultConfigPrefixPathList)
+	// pp.Println(defaultConfigPrefixPathList)
 }
 
 // AddConfigPaths

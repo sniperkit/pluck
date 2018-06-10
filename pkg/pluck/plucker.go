@@ -13,39 +13,16 @@ import (
 	"strings"
 	"sync"
 
-	// config
+	// external
 	"github.com/BurntSushi/toml"
-	config "github.com/sniperkit/pluck/pkg/config"
-
-	// debug
 	"github.com/pkg/errors"
-	pp "github.com/sniperkit/colly/plugins/app/debug/pp"
+	log "github.com/sirupsen/logrus"
+	// pp "github.com/sniperkit/colly/plugins/app/debug/pp"
 
 	// internal
-	log "github.com/sniperkit/pluck/pkg/log"
+	config "github.com/sniperkit/pluck/pkg/config"
 	striphtml "github.com/sniperkit/pluck/pkg/striphtml"
 )
-
-// ConfigLegacy specifies parameters for plucking
-type ConfigLegacy struct {
-	Activators  []string `json:"activators" yaml:"activators" toml:"activators" xml:"activators" ini:"activators"`                      // must be found in order, before capturing commences
-	Permanent   int      `json:"permanent" yaml:"permanent" toml:"permanent" xml:"permanent" ini:"permanent"`                           // number of activators that stay permanently (counted from left to right)
-	Deactivator string   `required:"true" json:"deactivator" yaml:"deactivator" toml:"deactivator" xml:"deactivator" ini:"deactivator"` // restarts capturing
-	Finisher    string   `json:"finisher" yaml:"finisher" toml:"finisher" xml:"finisher" ini:"finisher"`                                // finishes capturing this pluck
-	Limit       int      `json:"limit" yaml:"limit" toml:"limit" xml:"limit" ini:"limit"`                                               // specifies the number of times capturing can occur
-	Name        string   `json:"name" yaml:"name" toml:"name" xml:"name" ini:"name"`                                                    // the key in the returned map, after completion
-	Mode        string   `json:"mode" yaml:"mode" toml:"mode" xml:"mode" ini:"mode"`                                                    // Activators Mode; available
-	Sanitize    bool     `json:"sanitize" yaml:"sanitize" toml:"sanitize" xml:"sanitize" ini:"sanitize"`                                // Sanitize html content
-	Maximum     int      `json:"maximum" yaml:"maximum" toml:"maximum" xml:"maximum" ini:"maximum"`                                     // maximum number of characters for a capture
-	Separator   string   `json:"separator" yaml:"separator" toml:"separator" xml:"separator" ini:"separator"`                           // separator inside the match to use if we want to join all the occurences into a slice of strings
-	Patterns    []string `json:"patterns" yaml:"patterns" toml:"patterns" xml:"patterns" ini:"patterns"`                                // identify some optional patterns to split down results
-	Whitelist   []string `json:"whitelist" yaml:"whitelist" toml:"whitelist" xml:"whitelist" ini:"whitelist"`                           // set a word list to include a plucked occurrence
-	Blacklist   []string `json:"activatoblacklistrs" yaml:"blacklist" toml:"blacklist" xml:"blacklist" ini:"blacklist"`                 // set a word list to exclude a plucked occurrence
-}
-
-type configs struct {
-	Pluck []config.Config
-}
 
 // Plucker stores the result and the types of things to pluck
 type Plucker struct {
@@ -54,7 +31,7 @@ type Plucker struct {
 }
 
 type pluckUnit struct {
-	config       Config
+	config       config.Config
 	activators   [][]byte
 	patterns     [][]byte
 	whitelist    [][]byte
@@ -136,16 +113,16 @@ func (p *Plucker) Add(c config.Config) {
 	}
 
 	// matchMode
-	u.matchMode = []byte(c.Mode)
+	u.matchMode = []byte(c.Match.Mode)
 
 	// matchPhrase
-	u.matchPhrase = []byte(c.Phrase)
+	u.matchPhrase = []byte(c.Match.Phrase)
 
 	// separator
-	u.separator = []byte(c.Separtor)
+	u.separator = []byte(c.Match.Separator)
 
 	// autoSplit
-	u.autoSplit = c.Split
+	u.autoSplit = c.Match.Split
 
 	// `patterns` is a list of words to extract as a sub-result tree
 	u.patterns = make([][]byte, len(c.Patterns))
@@ -171,9 +148,42 @@ func (p *Plucker) Add(c config.Config) {
 	log.Infof("Added plucker %+v", c)
 }
 
-// Load will load a YAML configuration file of untis
+// Load will load a TOML configuration file of untis
 // to pluck with specified parameters
 func (p *Plucker) Load(f string) (err error) {
+	log.Debugf("load config file at: %s", f)
+
+	var conf *config.Configs
+	conf, err = config.NewFromFile(false, false, false, f)
+	if err != nil {
+		return errors.Wrap(err, "problem opening config file "+f)
+	}
+
+	for i := range conf.Pluck {
+		var c config.Config
+		c.Activators = conf.Pluck[i].Activators
+		c.Deactivator = conf.Pluck[i].Deactivator
+		c.Finisher = conf.Pluck[i].Finisher
+		c.Limit = conf.Pluck[i].Limit
+		c.Name = conf.Pluck[i].Name
+		c.Permanent = conf.Pluck[i].Permanent
+		c.Sanitize = conf.Pluck[i].Sanitize
+		c.Maximum = conf.Pluck[i].Maximum
+		p.Add(c)
+	}
+
+	// Dump config file for dev purpise
+	dumpFormats := []string{"yaml", "json", "toml", "xml"}
+	dumpNodes := []string{}
+	config.Dump(conf, dumpFormats, dumpNodes, "./conf/schema/plucker") // use string slices
+	// pp.Println(appConfig)
+
+	return
+}
+
+// Load will load a TOML configuration file of untis
+// to pluck with specified parameters
+func (p *Plucker) LoadTOML(f string) (err error) {
 	tomlData, err := ioutil.ReadFile(f)
 	if err != nil {
 		return errors.Wrap(err, "problem opening "+f)
@@ -186,7 +196,7 @@ func (p *Plucker) Load(f string) (err error) {
 // LoadFromString will load a YAML configuration file of untis
 // to pluck with specified parameters
 func (p *Plucker) LoadFromString(tomlString string) (err error) {
-	var conf configs
+	var conf config.Configs
 	_, err = toml.Decode(tomlString, &conf)
 	log.Debugf("Loaded toml: %+v", conf)
 	for i := range conf.Pluck {

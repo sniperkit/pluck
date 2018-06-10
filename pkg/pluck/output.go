@@ -6,9 +6,7 @@ import (
 
 	// external
 	"github.com/pkg/errors"
-
-	// internal
-	log "github.com/sniperkit/pluck/pkg/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // ResultJSON returns the result, formatted as JSON.

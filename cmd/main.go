@@ -7,7 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sniperkit/pluck/pluck"
+	"github.com/sniperkit/pluck/pkg/config"
+	"github.com/sniperkit/pluck/pkg/pluck"
 	"github.com/urfave/cli"
 )
 
@@ -126,13 +127,14 @@ $ pluck -a 'Section 2' -a '<a' -a 'href' -a '"' -d '"' -p 1 -finisher "Section 3
 				fmt.Println("Must specify at deactivator. For example -d 'end'.\nSee help and usage with -h")
 				return nil
 			}
-			p.Add(pluck.Config{
+			p.Add(config.Config{
 				Activators:  c.GlobalStringSlice("activator"),
 				Deactivator: c.GlobalString("deactivator"),
 				Limit:       c.GlobalInt("limit"),
 				Sanitize:    c.GlobalBool("sanitize"),
 				Finisher:    c.GlobalString("finisher"),
 				Permanent:   c.GlobalInt("permanent"),
+				// add other features later...
 			})
 		}
 
